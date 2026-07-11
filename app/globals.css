@@ -3,16 +3,9 @@
 :root {
   --background: #030303;
   --foreground: #f4f4f5;
-  
   --card: #09090b;
   --card-foreground: #f4f4f5;
-  
   --border: #27272a;
-  
-  --gold-glow: rgba(234, 179, 8, 0.15);
-  --toty-glow: rgba(99, 102, 241, 0.3);
-  --silver-glow: rgba(161, 161, 170, 0.1);
-  --bronze-glow: rgba(180, 83, 9, 0.1);
 }
 
 @theme inline {
@@ -21,84 +14,84 @@
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-border: var(--border);
-  
-  --animate-shine: shine 4s ease-in-out infinite;
+  --font-sans: var(--font-outfit), 'Outfit', system-ui, sans-serif;
+  --font-mono: var(--font-mono), 'Share Tech Mono', monospace;
+
+  --animate-card-shine: card-shine 3.5s ease-in-out infinite;
   --animate-holo: holo 8s ease infinite;
-  --animate-pulse-glow: pulse-glow 2s ease-in-out infinite;
+  --animate-pulse-glow: pulse-glow 2.5s ease-in-out infinite;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-reveal: reveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-@keyframes shine {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
+/* ============================================================
+   KEYFRAMES
+   ============================================================ */
+@keyframes card-shine {
+  0% { background-position: -300% 0; }
+  100% { background-position: 300% 0; }
 }
 
 @keyframes holo {
   0%, 100% {
     background-position: 0% 50%;
-    filter: hue-rotate(0deg);
+    filter: hue-rotate(0deg) brightness(1);
   }
-  50% {
+  33% {
+    background-position: 50% 0%;
+    filter: hue-rotate(60deg) brightness(1.1);
+  }
+  66% {
     background-position: 100% 50%;
-    filter: hue-rotate(180deg);
+    filter: hue-rotate(120deg) brightness(1.05);
   }
 }
 
 @keyframes pulse-glow {
-  0%, 100% {
-    opacity: 0.5;
-    transform: scale(1);
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.9; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-8px) rotate(0.5deg); }
+  66% { transform: translateY(-4px) rotate(-0.5deg); }
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
   }
-  50% {
-    opacity: 0.8;
-    transform: scale(1.02);
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
+@keyframes shimmer-sweep {
+  0% { transform: translateX(-100%) skewX(-15deg); }
+  100% { transform: translateX(300%) skewX(-15deg); }
+}
+
+/* ============================================================
+   BASE STYLES
+   ============================================================ */
 body {
   background: var(--background);
   color: var(--foreground);
   overflow-x: hidden;
+  font-feature-settings: "kern" 1, "liga" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Premium Utility Classes */
-.glass-card {
-  background: linear-gradient(135deg, rgba(24, 24, 27, 0.6) 0%, rgba(9, 9, 11, 0.8) 100%);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.glass-panel {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-/* Metallic Border Effect Wrapper */
-.metallic-gold {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #78350f 100%);
-}
-
-.metallic-toty {
-  background: linear-gradient(135deg, #3b82f6 0%, #6366f1 50%, #1e1b4b 100%);
-}
-
-.metallic-silver {
-  background: linear-gradient(135deg, #f4f4f5 0%, #a1a1aa 50%, #52525b 100%);
-}
-
-.metallic-bronze {
-  background: linear-gradient(135deg, #f97316 0%, #b45309 50%, #451a03 100%);
-}
-
-/* 3D Perspective Context */
-.perspective-1000 {
-  perspective: 1000px;
+/* ============================================================
+   3D CARD PERSPECTIVE
+   ============================================================ */
+.perspective-1200 {
+  perspective: 1200px;
+  perspective-origin: 50% 50%;
 }
 
 .preserve-3d {
@@ -107,13 +100,166 @@ body {
 
 .backface-hidden {
   backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
-/* Hide scrollbar defaults */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
+/* ============================================================
+   SCOUT CARD — PREMIUM SHIELD SILHOUETTE
+   The shape is inspired by classic collectible card shields.
+   All artwork, borders, and decorations are original to Scout.
+   ============================================================ */
+
+/* Outer glow wrapper — preserves drop-shadow on clipped shapes */
+.scout-card-glow {
+  filter:
+    drop-shadow(0 0 40px var(--card-glow-color, rgba(0,0,0,0.6)))
+    drop-shadow(0 25px 60px rgba(0, 0, 0, 0.85))
+    drop-shadow(0 4px 12px rgba(0, 0, 0, 0.9));
+  transition: filter 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+
+.scout-card-glow:hover {
+  filter:
+    drop-shadow(0 0 60px var(--card-glow-color, rgba(0,0,0,0.6)))
+    drop-shadow(0 30px 80px rgba(0, 0, 0, 0.9))
+    drop-shadow(0 8px 20px rgba(0, 0, 0, 0.95));
 }
+
+/* Scout's original shield clip-path — precision geometric silhouette */
+.scout-shield {
+  clip-path: path('M 170 0 C 170 0 340 28 340 60 L 340 310 C 340 370 170 420 170 420 C 170 420 0 370 0 310 L 0 60 C 0 28 170 0 170 0 Z');
+}
+
+/* Outer metallic border ring — 3px thick, clip-matched */
+.scout-shield-border {
+  clip-path: path('M 170 0 C 170 0 340 28 340 60 L 340 310 C 340 370 170 420 170 420 C 170 420 0 370 0 310 L 0 60 C 0 28 170 0 170 0 Z');
+}
+
+/* Shimmer sweep animation */
+.card-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.12) 45%,
+    rgba(255, 255, 255, 0.25) 50%,
+    rgba(255, 255, 255, 0.12) 55%,
+    transparent 70%
+  );
+  animation: shimmer-sweep 3.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ============================================================
+   METALLIC BORDER GRADIENTS — 10 COLLECTIBLE THEMES
+   ============================================================ */
+.metallic-galaxy {
+  background: linear-gradient(135deg,
+    #9333ea 0%,
+    #c084fc 25%,
+    #7c3aed 50%,
+    #a855f7 75%,
+    #4c1d95 100%
+  );
+}
+.metallic-legend {
+  background: linear-gradient(135deg,
+    #fde68a 0%,
+    #fbbf24 20%,
+    #f59e0b 40%,
+    #fef3c7 55%,
+    #d97706 75%,
+    #92400e 100%
+  );
+}
+.metallic-gold {
+  background: linear-gradient(135deg,
+    #d97706 0%,
+    #f59e0b 20%,
+    #fbbf24 40%,
+    #fef08a 55%,
+    #ca8a04 75%,
+    #78350f 100%
+  );
+}
+.metallic-champion {
+  background: linear-gradient(135deg,
+    #059669 0%,
+    #34d399 25%,
+    #6ee7b7 45%,
+    #34d399 60%,
+    #047857 80%,
+    #064e3b 100%
+  );
+}
+.metallic-shadow {
+  background: linear-gradient(135deg,
+    #52525b 0%,
+    #3f3f46 25%,
+    #71717a 50%,
+    #3f3f46 75%,
+    #27272a 100%
+  );
+}
+.metallic-silver {
+  background: linear-gradient(135deg,
+    #e4e4e7 0%,
+    #a1a1aa 20%,
+    #d4d4d8 40%,
+    #f4f4f5 55%,
+    #a1a1aa 75%,
+    #71717a 100%
+  );
+}
+.metallic-neon {
+  background: linear-gradient(135deg,
+    #22c55e 0%,
+    #4ade80 30%,
+    #86efac 50%,
+    #4ade80 70%,
+    #15803d 100%
+  );
+}
+.metallic-inferno {
+  background: linear-gradient(135deg,
+    #ea580c 0%,
+    #f97316 25%,
+    #fb923c 50%,
+    #f97316 70%,
+    #9a3412 100%
+  );
+}
+.metallic-crystal {
+  background: linear-gradient(135deg,
+    rgba(255,255,255,0.6) 0%,
+    rgba(255,255,255,0.2) 30%,
+    rgba(200,220,255,0.4) 50%,
+    rgba(255,255,255,0.3) 75%,
+    rgba(200,200,255,0.6) 100%
+  );
+}
+.metallic-bronze {
+  background: linear-gradient(135deg,
+    #b45309 0%,
+    #d97706 25%,
+    #f59e0b 45%,
+    #ca8a04 60%,
+    #92400e 80%,
+    #451a03 100%
+  );
+}
+
+/* ============================================================
+   GLASS & UTILITY
+   ============================================================ */
+.glass-card {
+  background: linear-gradient(135deg, rgba(24, 24, 27, 0.6) 0%, rgba(9, 9, 11, 0.8) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

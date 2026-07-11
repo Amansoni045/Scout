@@ -12,6 +12,8 @@ export function detectAchievements(profile: PlayerProfile): Achievement[] {
       hardSolved: profile.hardSolved,
       contestRating: profile.contestRating,
       streak: profile.streak,
+      languages: profile.languages,
+      acceptanceRate: profile.acceptanceRate,
     });
 
     if (isTriggered) {

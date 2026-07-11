@@ -38,27 +38,30 @@ export function ScoutForm({ onSubmit, isLoading }: Props) {
   return (
     <form
       onSubmit={handleSubmit(handleFormSubmit)}
-      className="w-full max-w-md mx-auto flex flex-col gap-3 relative z-10"
+      className="w-full max-w-md mx-auto flex flex-col gap-4 relative z-10 font-sans"
     >
-      <div className="flex flex-col gap-1.5 text-left">
-        <label htmlFor="username" className="text-xs font-bold uppercase tracking-wider text-zinc-400">
-          LeetCode Username
+      <div className="flex flex-col gap-2 text-left">
+        <label htmlFor="username" className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+          Scout Coder Identity
         </label>
-        <div className="relative flex items-center">
+        <div className="relative flex items-center group">
+          <span className="absolute left-4 text-zinc-500 group-focus-within:text-zinc-300 transition-colors text-sm">
+            🔍
+          </span>
           <input
             id="username"
             type="text"
-            placeholder="e.g. janesmith"
+            placeholder="Enter LeetCode handle..."
             disabled={isLoading}
             {...register("username")}
-            className="w-full px-4 py-3 rounded-xl bg-zinc-900/60 border border-zinc-800 focus:border-zinc-700 outline-none transition-colors text-white placeholder-zinc-600 disabled:opacity-50 text-sm focus:ring-1 focus:ring-zinc-700"
+            className="w-full pl-11 pr-12 py-3.5 rounded-xl bg-zinc-950/40 border border-white/5 focus:border-white/10 outline-none transition-all text-white placeholder-zinc-600 disabled:opacity-50 text-sm focus:ring-1 focus:ring-white/10"
           />
           {isLoading && (
-            <div className="absolute right-3 w-5 h-5 rounded-full border-2 border-t-white border-white/10 animate-spin" />
+            <div className="absolute right-4 w-4 h-4 rounded-full border border-t-white border-white/10 animate-spin" />
           )}
         </div>
         {errors.username && (
-          <span className="text-xs text-red-500 font-medium mt-1">
+          <span className="text-[11px] text-red-500/80 font-bold tracking-tight mt-1">
             {errors.username.message}
           </span>
         )}
@@ -67,14 +70,14 @@ export function ScoutForm({ onSubmit, isLoading }: Props) {
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full py-3 bg-zinc-100 hover:bg-white text-zinc-950 font-bold rounded-xl transition-all cursor-pointer shadow-lg disabled:opacity-50 text-sm tracking-wide active:scale-[0.99]"
+        className="w-full py-3.5 bg-white hover:bg-zinc-100 text-zinc-950 font-black rounded-xl transition-all cursor-pointer shadow-xl disabled:opacity-50 text-xs uppercase tracking-widest active:scale-[0.99] hover:shadow-white/5"
       >
-        {isLoading ? "Scouting..." : "Generate Developer Card"}
+        {isLoading ? "Analyzing profile..." : "Generate Developer Card"}
       </button>
 
-      <div className="text-center mt-1">
-        <span className="text-[10px] uppercase tracking-widest text-zinc-500">
-          No Login Required • Public Profile Only
+      <div className="text-center">
+        <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-600">
+          No Login Required • Public LeetCode Profile Only
         </span>
       </div>
     </form>

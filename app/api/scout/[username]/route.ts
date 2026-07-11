@@ -38,7 +38,7 @@ export async function GET(
     const profile = provider.normalize(rawData);
 
     // 3. Generate DevCardCompiled Object
-    const card = generateDevCard(profile, "developer");
+    const card = generateDevCard(profile, "identity");
 
     analytics.track({
       name: "card_generated",

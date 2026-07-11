@@ -1,4 +1,4 @@
-export type CardType = "developer" | "github" | "resume" | "career" | "team";
+export type CardType = "identity" | "milestone" | "contest" | "achievement" | "wrapped" | "comparison";
 
 export interface PlayerProfile {
   username: string;

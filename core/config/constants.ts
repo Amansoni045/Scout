@@ -1,8 +1,8 @@
 export const APP_CONFIG = {
-  name: "DevCard",
-  tagline: "Generate Your Developer Football Card",
-  description: "Transform your public coding profiles into premium football-inspired developer cards.",
-  url: "https://devcard.vercel.app", // Fallback production URL
+  name: "Scout",
+  tagline: "Your Coding Profile. Reimagined.",
+  description: "Transform your public coding profiles into premium collectible developer cards worth sharing.",
+  url: "https://scoutcard.dev",
   versions: {
     rating: "v1",
     theme: "v1",
@@ -10,3 +10,4 @@ export const APP_CONFIG = {
   },
   supportedPlatforms: ["leetcode"] as const,
 };
+

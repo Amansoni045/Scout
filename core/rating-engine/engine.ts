@@ -1,56 +1,143 @@
 import { CardStats, PlayerProfile } from "../../types";
-import { RATING_THRESHOLDS } from "../config/rating-rules";
+import { RATING_CONFIG, TIERS, Benchmarks } from "../config/rating-rules";
 
-function clamp(value: number, min = 1, max = 99): number {
-  return Math.min(Math.max(Math.round(value), min), max);
+// Piecewise linear interpolation to normalize raw metrics to a 10-99 score based on realistic benchmarks
+export function normalizeMetric(val: number, benchmarks: Benchmarks): number {
+  const { rookie, average, advanced, elite, top1percent } = benchmarks;
+  
+  if (val <= rookie) return 10;
+  
+  if (val <= average) {
+    // rookie (10) -> average (50)
+    return 10 + ((val - rookie) / (average - rookie)) * 40;
+  }
+  if (val <= advanced) {
+    // average (50) -> advanced (75)
+    return 50 + ((val - average) / (advanced - average)) * 25;
+  }
+  if (val <= elite) {
+    // advanced (75) -> elite (90)
+    return 75 + ((val - advanced) / (elite - advanced)) * 15;
+  }
+  if (val <= top1percent) {
+    // elite (90) -> top 1% (99)
+    return 90 + ((val - elite) / (top1percent - elite)) * 9;
+  }
+  
+  return 99; // maximum attainable rating attribute
+}
+
+export function getTierName(ovr: number): string {
+  const matched = TIERS.find((t) => ovr >= t.min && ovr <= t.max);
+  return matched ? matched.name : "Rookie";
 }
 
 export function calculateRatings(profile: PlayerProfile): CardStats {
-  const { pace, shooting, passing, dribbling, defending, physical } = RATING_THRESHOLDS;
+  const cfg = RATING_CONFIG;
 
-  // 1. PACE: consistency
-  const activeStreak = profile.streak ?? 0;
-  const streakPct = Math.min(activeStreak / pace.maxStreak, 1);
-  const activityPct = Math.min(profile.recentActivityCount / pace.maxActivity, 1);
-  const pac = clamp(
-    (streakPct * pace.streakWeight + activityPct * pace.activityWeight) * 99
+  // 1. PAC (Consistency & Active Coding Streak)
+  const streakScore = normalizeMetric(profile.streak ?? 0, cfg.pace.streak.benchmarks);
+  const activityScore = normalizeMetric(profile.recentActivityCount, cfg.pace.recentActivity.benchmarks);
+  const pac = Math.round(streakScore * cfg.pace.streak.weight + activityScore * cfg.pace.recentActivity.weight);
+
+  // 2. SHO (Hard Problems Mastery)
+  const hardScore = normalizeMetric(profile.hardSolved, cfg.shooting.hardSolved.benchmarks);
+  const ratio = profile.totalSolved > 0 ? profile.hardSolved / profile.totalSolved : 0;
+  const ratioScore = normalizeMetric(ratio, cfg.shooting.hardRatio.benchmarks);
+  const sho = Math.round(hardScore * cfg.shooting.hardSolved.weight + ratioScore * cfg.shooting.hardRatio.weight);
+
+  // 3. PAS (Competitive Programming & Contest Rating)
+  const cRating = profile.contestRating ?? 1000; // default base LeetCode contest rating
+  const contestRatingScore = normalizeMetric(cRating, cfg.passing.contestRating.benchmarks);
+  // contest attendance or badges count acts as experience
+  const attendanceScore = normalizeMetric(profile.badges.length, cfg.passing.contestAttendance.benchmarks);
+  const pas = Math.round(contestRatingScore * cfg.passing.contestRating.weight + attendanceScore * cfg.passing.contestAttendance.weight);
+
+  // 4. DRI (Acceptance Rate Precision)
+  const dri = Math.round(normalizeMetric(profile.acceptanceRate, cfg.dribbling.acceptanceRate.benchmarks));
+
+  // 5. DEF (DSA Fundamentals - Easy & Medium solved counts)
+  const easyScore = normalizeMetric(profile.easySolved, cfg.defending.easySolved.benchmarks);
+  const mediumScore = normalizeMetric(profile.mediumSolved, cfg.defending.mediumSolved.benchmarks);
+  const def = Math.round(easyScore * cfg.defending.easySolved.weight + mediumScore * cfg.defending.mediumSolved.weight);
+
+  // 6. PHY (Physical - Total Solved Volume, Multi-language Versatility & Badges count)
+  const totalScore = normalizeMetric(profile.totalSolved, cfg.physical.totalSolved.benchmarks);
+  const langScore = normalizeMetric(profile.languages.length, cfg.physical.languages.benchmarks);
+  const badgesScore = normalizeMetric(profile.badges.length, cfg.physical.badges.benchmarks);
+  const phy = Math.round(
+    totalScore * cfg.physical.totalSolved.weight +
+    langScore * cfg.physical.languages.weight +
+    badgesScore * cfg.physical.badges.weight
   );
 
-  // 2. SHOOTING: hard problems
-  const hardPct = Math.min(profile.hardSolved / shooting.maxHardSolved, 1);
-  const hardRatio = profile.totalSolved > 0 ? profile.hardSolved / profile.totalSolved : 0;
-  const sho = clamp(
-    (hardPct * shooting.hardCountWeight + Math.min(hardRatio * 5, 1) * shooting.ratioWeight) * 99
-  );
+  // 7. OVERALL OVR (Weighted rating mapped to ensure contest performance & raw DSA volume balance each other out)
+  const rawOvr =
+    pac * cfg.ovrWeights.pac +
+    sho * cfg.ovrWeights.sho +
+    pas * cfg.ovrWeights.pas +
+    dri * cfg.ovrWeights.dri +
+    def * cfg.ovrWeights.def +
+    phy * cfg.ovrWeights.phy;
 
-  // 3. PASSING: contests
-  const ratingPct = profile.contestRating
-    ? Math.min(profile.contestRating / passing.maxRating, 1)
-    : 0.4; // Fallback median passing skill
-  const attendancePct = Math.min((profile.streak ?? 0) / passing.maxAttended, 1); // approximate contest participation
-  const pas = clamp(
-    (ratingPct * passing.contestRatingWeight + attendancePct * passing.attendanceWeight) * 99
-  );
-
-  // 4. DRIBBLING: acceptance rate precision
-  const dri = clamp((Math.min(profile.acceptanceRate / dribbling.maxAcceptance, 1)) * 99);
-
-  // 5. DEFENDING: easy & medium solved
-  const easyPct = Math.min(profile.easySolved / defending.maxEasySolved, 1);
-  const medPct = Math.min(profile.mediumSolved / defending.maxMediumSolved, 1);
-  const def = clamp(
-    (easyPct * defending.easyWeight + medPct * defending.mediumWeight) * 99
-  );
-
-  // 6. PHYSICAL: total volume + language versatility
-  const totalPct = Math.min(profile.totalSolved / physical.maxTotalSolved, 1);
-  const langPct = Math.min(profile.languages.length / physical.maxLanguages, 1);
-  const phy = clamp(
-    (totalPct * physical.totalSolvedWeight + langPct * physical.languagesWeight) * 99
-  );
-
-  // 7. OVERALL: Weighted average of the attributes
-  const ovr = clamp((pac + sho + pas + dri + def + phy) / 6);
+  const ovr = Math.min(Math.max(Math.round(rawOvr), 10), 99);
 
   return { ovr, pac, sho, pas, dri, def, phy };
+}
+
+export interface RatingExplanation {
+  ovr: number;
+  tier: string;
+  breakdown: Array<{
+    stat: string;
+    score: number;
+    description: string;
+  }>;
+}
+
+export function explainRating(profile: PlayerProfile): RatingExplanation {
+  const stats = calculateRatings(profile);
+  const tier = getTierName(stats.ovr);
+  
+  return {
+    ovr: stats.ovr,
+    tier,
+    breakdown: [
+      {
+        stat: "OVERALL",
+        score: stats.ovr,
+        description: `Your general rank is categorized as "${tier}". Calculated using a weighted formula balancing contest proficiency, streak consistency, and DSA problem completion depth.`,
+      },
+      {
+        stat: "PACE (Consistency)",
+        score: stats.pac,
+        description: `Derived from streak length (${profile.streak ?? 0} days) and active submissions in the last month (${profile.recentActivityCount} active days).`,
+      },
+      {
+        stat: "SHOOTING (Hard Problems)",
+        score: stats.sho,
+        description: `Measures advanced capabilities. Based on ${profile.hardSolved} hard algorithms solved, which is ${profile.totalSolved > 0 ? Math.round((profile.hardSolved / profile.totalSolved) * 100) : 0}% of your total solved set.`,
+      },
+      {
+        stat: "PASSING (Contests)",
+        score: stats.pas,
+        description: `Reflects competitive coding competence. Mapped using your official LeetCode Contest Rating (${profile.contestRating ?? "Unrated"}) and contest performance badges.`,
+      },
+      {
+        stat: "DRIBBLING (Accuracy)",
+        score: stats.dri,
+        description: `Tracks precision. Directly correlates to your overall submission acceptance rate (${profile.acceptanceRate}%).`,
+      },
+      {
+        stat: "DEFENDING ( DSA Volume)",
+        score: stats.def,
+        description: `Evaluates fundamental algorithmic knowledge. Based on ${profile.easySolved} easy and ${profile.mediumSolved} medium difficulty problem completions.`,
+      },
+      {
+        stat: "PHYSICAL (Breadth)",
+        score: stats.phy,
+        description: `Shows experience and versatility. Determined by your total solved volume (${profile.totalSolved} problems), language variety (${profile.languages.join(", ") || "none"}), and earned profile badges.`,
+      },
+    ],
+  };
 }
