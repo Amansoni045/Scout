@@ -1,0 +1,119 @@
+@import "tailwindcss";
+
+:root {
+  --background: #030303;
+  --foreground: #f4f4f5;
+  
+  --card: #09090b;
+  --card-foreground: #f4f4f5;
+  
+  --border: #27272a;
+  
+  --gold-glow: rgba(234, 179, 8, 0.15);
+  --toty-glow: rgba(99, 102, 241, 0.3);
+  --silver-glow: rgba(161, 161, 170, 0.1);
+  --bronze-glow: rgba(180, 83, 9, 0.1);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-border: var(--border);
+  
+  --animate-shine: shine 4s ease-in-out infinite;
+  --animate-holo: holo 8s ease infinite;
+  --animate-pulse-glow: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes shine {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes holo {
+  0%, 100% {
+    background-position: 0% 50%;
+    filter: hue-rotate(0deg);
+  }
+  50% {
+    background-position: 100% 50%;
+    filter: hue-rotate(180deg);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.02);
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  overflow-x: hidden;
+}
+
+/* Premium Utility Classes */
+.glass-card {
+  background: linear-gradient(135deg, rgba(24, 24, 27, 0.6) 0%, rgba(9, 9, 11, 0.8) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Metallic Border Effect Wrapper */
+.metallic-gold {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #78350f 100%);
+}
+
+.metallic-toty {
+  background: linear-gradient(135deg, #3b82f6 0%, #6366f1 50%, #1e1b4b 100%);
+}
+
+.metallic-silver {
+  background: linear-gradient(135deg, #f4f4f5 0%, #a1a1aa 50%, #52525b 100%);
+}
+
+.metallic-bronze {
+  background: linear-gradient(135deg, #f97316 0%, #b45309 50%, #451a03 100%);
+}
+
+/* 3D Perspective Context */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+/* Hide scrollbar defaults */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
