@@ -55,12 +55,30 @@ export function ScoutCard({ card, cardType, opponentCard }: Props) {
               }}
             >
               <div className={`absolute inset-0 scout-shield-border metallic-${theme.id}`} />
-              <div className="absolute scout-shield-border" style={{ inset: "3.5px", background: "#0a0a0c" }} />
-              <div className={`absolute scout-shield-border metallic-${theme.id}`} style={{ inset: "5px", opacity: 0.35 }} />
+              <div
+                className="absolute inset-0 scout-shield-border"
+                style={{
+                  transform: "scale(0.98)",
+                  transformOrigin: "center",
+                  background: "#0a0a0c",
+                }}
+              />
+              <div
+                className={`absolute inset-0 scout-shield-border metallic-${theme.id}`}
+                style={{
+                  transform: "scale(0.975)",
+                  transformOrigin: "center",
+                  opacity: 0.35,
+                }}
+              />
 
               <div
-                className="absolute scout-shield overflow-hidden"
-                style={{ inset: "6px", background: theme.bgGradient }}
+                className="absolute inset-0 scout-shield overflow-hidden"
+                style={{
+                  transform: "scale(0.97)",
+                  transformOrigin: "center",
+                  background: theme.bgGradient,
+                }}
               >
                 <div
                   className="absolute inset-0 pointer-events-none z-10"
