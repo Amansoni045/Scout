@@ -47,100 +47,74 @@ export function ScoutCard({ card, cardType, opponentCard }: Props) {
             style={{ "--card-glow-color": theme.glowEffect } as React.CSSProperties}
           >
             <div
-              className="w-full h-full"
+              className={`w-full h-full rounded-[24px] border border-white/10 p-[2px] overflow-hidden relative`}
               style={{
                 transform: `rotateX(${rotate.x}deg) rotateY(${rotate.y}deg)`,
                 transition: isHovered ? "transform 0.05s linear" : "transform 0.6s ease",
                 transformStyle: "preserve-3d",
+                background: theme.bgGradient,
               }}
             >
-              <div className={`absolute inset-0 scout-shield-border metallic-${theme.id}`} />
               <div
-                className="absolute inset-0 scout-shield-border"
+                className="absolute inset-0 pointer-events-none z-10"
                 style={{
-                  transform: "scale(0.98)",
-                  transformOrigin: "center",
-                  background: "#0a0a0c",
+                  background: `radial-gradient(ellipse 65% 40% at ${lightX}% ${lightY}%, rgba(255,255,255,0.1) 0%, transparent 75%)`,
                 }}
               />
-              <div
-                className={`absolute inset-0 scout-shield-border metallic-${theme.id}`}
-                style={{
-                  transform: "scale(0.975)",
-                  transformOrigin: "center",
-                  opacity: 0.35,
-                }}
-              />
-
-              <div
-                className="absolute inset-0 scout-shield overflow-hidden"
-                style={{
-                  transform: "scale(0.97)",
-                  transformOrigin: "center",
-                  background: theme.bgGradient,
-                }}
-              >
+              <div className="absolute inset-0 pointer-events-none z-10 card-shimmer overflow-hidden" />
+              
+              {theme.holoOverlay && (
                 <div
-                  className="absolute inset-0 pointer-events-none z-10"
+                  className="absolute inset-0 pointer-events-none z-10 mix-blend-color-dodge opacity-20 animate-holo"
                   style={{
-                    background: `radial-gradient(ellipse 65% 40% at ${lightX}% ${lightY}%, rgba(255,255,255,0.1) 0%, transparent 75%)`,
+                    backgroundImage:
+                      "linear-gradient(125deg, rgba(255,255,255,0.15) 0%, rgba(255,100,180,0.1) 25%, rgba(100,200,255,0.1) 50%, rgba(180,255,100,0.08) 75%, rgba(255,255,255,0.15) 100%)",
+                    backgroundSize: "400% 400%",
                   }}
                 />
-                <div className="absolute inset-0 pointer-events-none z-10 card-shimmer overflow-hidden" />
-                
-                {theme.holoOverlay && (
-                  <div
-                    className="absolute inset-0 pointer-events-none z-10 mix-blend-color-dodge opacity-20 animate-holo"
-                    style={{
-                      backgroundImage:
-                        "linear-gradient(125deg, rgba(255,255,255,0.15) 0%, rgba(255,100,180,0.1) 25%, rgba(100,200,255,0.1) 50%, rgba(180,255,100,0.08) 75%, rgba(255,255,255,0.15) 100%)",
-                      backgroundSize: "400% 400%",
-                    }}
-                  />
-                )}
+              )}
 
-                <div className="relative z-30 flex flex-col h-full px-5 pt-5 pb-4">
-                  <div className="flex justify-between">
-                    <div>
-                      <span className="font-mono text-5xl font-black text-white block tracking-tighter leading-none">
-                        {stats.ovr}
-                      </span>
-                      <span className="text-[7.5px] font-black uppercase tracking-widest text-zinc-500 font-mono mt-0.5 block">
-                        OVR RATING
-                      </span>
+              <div className="relative z-30 flex flex-col h-full px-5 pt-5 pb-4">
+                <div className="flex justify-between">
+                  <div>
+                    <span className="font-mono text-5xl font-black text-white block tracking-tighter leading-none">
+                      {stats.ovr}
+                    </span>
+                    <span className="text-[7.5px] font-black uppercase tracking-widest text-zinc-500 font-mono mt-0.5 block">
+                      OVR RATING
+                    </span>
+                  </div>
+                  <CountryChip country={profile.country} />
+                </div>
+
+                <div className="flex flex-col items-center mt-1">
+                  <PremiumAvatar avatarUrl={profile.avatar} username={profile.username} theme={theme} />
+                </div>
+
+                <div className="text-center mt-2.5">
+                  <h2 className="text-[19px] font-black uppercase tracking-[0.08em] text-white truncate max-w-[200px] mx-auto">
+                    {profile.username}
+                  </h2>
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/[0.03] border border-white/[0.06] text-[7.5px] font-black uppercase text-zinc-500 mt-1 font-mono tracking-widest">
+                    {profile.platform.toUpperCase()}
+                  </span>
+                </div>
+
+                <div className="mx-4 my-2.5 h-[1px] bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+
+                <div className="grid grid-cols-3 gap-2">
+                  {Object.entries(STAT_LABELS).map(([k, label]) => (
+                    <div key={k} className="flex flex-col items-center py-1 bg-black/40 border border-white/5 rounded-lg">
+                      <span className="text-[14px] font-black text-white font-mono">{formatNumber(stats[k as keyof typeof stats])}</span>
+                      <span className="text-[7px] font-bold text-zinc-500 font-mono mt-0.5">{label}</span>
                     </div>
-                    <CountryChip country={profile.country} />
-                  </div>
+                  ))}
+                </div>
 
-                  <div className="flex flex-col items-center mt-1">
-                    <PremiumAvatar avatarUrl={profile.avatar} username={profile.username} theme={theme} />
-                  </div>
-
-                  <div className="text-center mt-2.5">
-                    <h2 className="text-[19px] font-black uppercase tracking-[0.08em] text-white truncate max-w-[200px] mx-auto">
-                      {profile.username}
-                    </h2>
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/[0.03] border border-white/[0.06] text-[7.5px] font-black uppercase text-zinc-500 mt-1 font-mono tracking-widest">
-                      {profile.platform.toUpperCase()}
-                    </span>
-                  </div>
-
-                  <div className="mx-4 my-2.5 h-[1px] bg-gradient-to-r from-transparent via-white/5 to-transparent" />
-
-                  <div className="grid grid-cols-3 gap-2">
-                    {Object.entries(STAT_LABELS).map(([k, label]) => (
-                      <div key={k} className="flex flex-col items-center py-1 bg-black/40 border border-white/5 rounded-lg">
-                        <span className="text-[14px] font-black text-white font-mono">{formatNumber(stats[k as keyof typeof stats])}</span>
-                        <span className="text-[7px] font-bold text-zinc-500 font-mono mt-0.5">{label}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="flex justify-center mt-auto">
-                    <span className="text-[7px] font-bold uppercase tracking-[0.25em] text-white/20 font-mono">
-                      SCOUT COLLECTIBLE IDENTITY
-                    </span>
-                  </div>
+                <div className="flex justify-center mt-auto">
+                  <span className="text-[7px] font-bold uppercase tracking-[0.25em] text-white/20 font-mono">
+                    SCOUT COLLECTIBLE IDENTITY
+                  </span>
                 </div>
               </div>
             </div>
