@@ -1,10 +1,9 @@
 import { useState, useRef } from "react";
 import { DevCard, ApiResponse } from "../types";
-import { logger } from "../core/logger/logger";
 
 export type LoadingPhase =
   | "IDLE"
-  | "SCOUTING"       // ⚽ Scouting Player...
+  | "SCOUTING"       // Scouting Player...
   | "LEAGUE_RECORD"  // Checking League Records...
   | "ANALYZING"      // Analyzing Performance...
   | "CALCULATING"    // Calculating Overall Rating...
@@ -21,7 +20,7 @@ const PHASES: LoadingPhase[] = [
 
 const PHASE_MESSAGES: Record<LoadingPhase, string> = {
   IDLE: "",
-  SCOUTING: "⚽ Scouting Player...",
+  SCOUTING: "Scouting Player...",
   LEAGUE_RECORD: "Checking League Records...",
   ANALYZING: "Analyzing Performance...",
   CALCULATING: "Calculating Overall Rating...",
@@ -33,13 +32,20 @@ export function useGenerator() {
   const [phase, setPhase] = useState<LoadingPhase>("IDLE");
   const [error, setError] = useState<{ code: string; message: string } | null>(null);
   const [card, setCard] = useState<DevCard | null>(null);
+  const [opponentCard, setOpponentCard] = useState<DevCard | null>(null);
   
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const getPhaseMessage = () => PHASE_MESSAGES[phase];
 
-  const scout = async (username: string) => {
-    // 1. Reset states & abort active requests
+  const reset = () => {
+    setPhase("IDLE");
+    setError(null);
+    setCard(null);
+    setOpponentCard(null);
+  };
+
+  const scout = async (username: string, opponentUsername?: string) => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
@@ -47,8 +53,8 @@ export function useGenerator() {
     
     setError(null);
     setCard(null);
+    setOpponentCard(null);
 
-    // 2. Start Phase transitions in parallel with fetch
     let activePhaseIndex = 0;
     setPhase(PHASES[0]);
 
@@ -57,59 +63,65 @@ export function useGenerator() {
         activePhaseIndex++;
         setPhase(PHASES[activePhaseIndex]);
       }
-    }, 900); // Shift phase every 900ms
+    }, 900);
 
     try {
+      // 1. Fetch Primary Profile
       const response = await fetch(`/api/scout/${encodeURIComponent(username)}`, {
         signal: abortControllerRef.current.signal,
       });
-
       const payload = (await response.json()) as ApiResponse<DevCard>;
 
-      // Clear interval once fetch settles
-      clearInterval(intervalId);
-
       if (!payload.success) {
+        clearInterval(intervalId);
         setPhase("IDLE");
         setError(payload.error);
         return;
       }
 
-      // Finish remaining phases quickly before showing card
+      // 2. Fetch Opponent Profile (if provided)
+      let oppCard: DevCard | null = null;
+      if (opponentUsername) {
+        const oppResponse = await fetch(`/api/scout/${encodeURIComponent(opponentUsername)}`, {
+          signal: abortControllerRef.current.signal,
+        });
+        const oppPayload = (await oppResponse.json()) as ApiResponse<DevCard>;
+        if (!oppPayload.success) {
+          clearInterval(intervalId);
+          setPhase("IDLE");
+          setError(oppPayload.error);
+          return;
+        }
+        oppCard = oppPayload.data;
+      }
+
+      clearInterval(intervalId);
+
+      // Finish remaining phases quickly
       for (let i = activePhaseIndex; i < PHASES.length; i++) {
         setPhase(PHASES[i]);
-        await new Promise((resolve) => setTimeout(resolve, 300));
+        await new Promise((resolve) => setTimeout(resolve, 250));
       }
 
       setCard(payload.data);
-      setPhase("READY");
-    } catch (err: unknown) {
-      clearInterval(intervalId);
-      setPhase("IDLE");
-
-      if (err instanceof Error && err.name === "AbortError") {
-        logger.info("Request aborted by user");
-        return;
+      if (oppCard) {
+        setOpponentCard(oppCard);
       }
-
-      logger.error("Scouting error in generator hook:", err);
-      setError({
-        code: "NETWORK_ERROR",
-        message: "Unable to connect to the scout server. Check your internet connection.",
-      });
+      setPhase("READY");
+    } catch (err: any) {
+      clearInterval(intervalId);
+      if (err.name !== "AbortError") {
+        setPhase("IDLE");
+        setError({ code: "SCOUT_FAILED", message: "Failed to connect to Scout database." });
+      }
     }
-  };
-
-  const reset = () => {
-    setPhase("IDLE");
-    setError(null);
-    setCard(null);
   };
 
   return {
     phase,
     error,
     card,
+    opponentCard,
     scout,
     reset,
     message: getPhaseMessage(),

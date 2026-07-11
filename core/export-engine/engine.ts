@@ -22,7 +22,7 @@ export async function exportDevCard(
     backgroundColor: options.transparentBg ? "transparent" : undefined,
     style: {
       transform: "scale(1)",
-      transformOrigin: "top left",
+      transformOrigin: "center center",
       margin: "0",
     },
   };

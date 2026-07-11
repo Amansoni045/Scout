@@ -1,4 +1,5 @@
 import React from "react";
+import { Shield } from "lucide-react";
 import { APP_CONFIG } from "@/core/config/constants";
 
 export function Navbar() {
@@ -6,8 +7,8 @@ export function Navbar() {
     <header className="w-full sticky top-6 z-50 px-6">
       <div className="max-w-4xl mx-auto h-14 rounded-full border border-white/5 bg-[#09090b]/40 backdrop-blur-md px-6 flex items-center justify-between shadow-2xl">
         <div className="flex items-center gap-2 select-none">
-          <span className="text-lg">⚽</span>
-          <span className="font-black text-[11px] uppercase tracking-widest text-zinc-100 font-mono">
+          <Shield className="w-4 h-4 text-white" />
+          <span className="font-black text-[11px] uppercase tracking-[0.25em] text-zinc-100 font-mono">
             {APP_CONFIG.name}
           </span>
         </div>
